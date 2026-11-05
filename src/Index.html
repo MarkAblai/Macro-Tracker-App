@@ -47,6 +47,21 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.03em;margin-top:2px}
 .stat b{display:block;font-size:18px;font-weight:650}
 .stat span{font-size:11px;color:var(--muted)}
 
+/* Weekly streak */
+.streak{font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.streak.on{color:var(--cal)}
+.week{display:flex;gap:6px}
+.sday{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:7px}
+.sday.dim{opacity:.3}
+.sdl{font-size:11px;color:var(--muted);font-weight:600}
+.sc{width:100%;max-width:40px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:650;font-variant-numeric:tabular-nums;background:var(--card2);color:var(--muted);animation:popin .45s cubic-bezier(.2,.8,.2,1) backwards}
+.sc.hit{background:var(--cal);color:#000}
+.sc.miss{background:var(--pro);color:#000}
+.sc.today{position:relative;background:conic-gradient(var(--cal) var(--p,0%),var(--card2) 0);color:var(--text)}
+.sc.today::before{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--card)}
+.sc.today .num{position:relative;z-index:1}
+@keyframes popin{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
 /* Protein */
 .bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:12px}
 .bar i{display:block;height:100%;border-radius:99px;background:var(--pro);transition:width .6s ease}
@@ -269,7 +284,44 @@ function renderToday() {
   const pPct = P ? Math.min(100, prot / P * 100) : 0;
   const pLeft = Math.max(0, P - prot);
 
+  // Weekly streak (Sun–Sat, matching the Calendar's week start)
+  const map = byDate();
+  const t0 = pd(D.today);
+  const weekStart = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - t0.getDay());
+  const DOW = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  let circles = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i);
+    const k = iso(d), it = map[k] || [], kc = sum(it, 'kcal');
+    let col = 'sday', sc = 'sc', style = `animation-delay:${i * 45}ms`;
+    if (k === D.today) {
+      sc += ' today';
+      style += `;--p:${T ? Math.min(100, Math.round(eaten / T * 100)) : 0}%`;
+    } else if (d > t0) { col += ' dim'; }   // future
+    else if (!it.length) { /* past, not logged → default */ }
+    else if (kc <= T) sc += ' hit';         // goal hit
+    else sc += ' miss';                     // goal missed
+    circles += `<div class="${col}"><span class="sdl">${DOW[i]}</span><div class="${sc}" style="${style}"><span class="num">${d.getDate()}</span></div></div>`;
+  }
+
+  // Consecutive goal-hit days ending yesterday; today never breaks it, can cross weeks.
+  let streak = 0, sd = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - 1);
+  while (true) {
+    const it = map[iso(sd)] || [];
+    if (!it.length || sum(it, 'kcal') > T) break;
+    streak++;
+    sd = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate() - 1);
+  }
+  const streakTxt = streak > 0 ? streak + ' day streak' : 'Start a streak';
+
   $('#v-today').innerHTML = `
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <span class="label">This week</span>
+        <span class="streak${streak > 0 ? ' on' : ''}">${streakTxt}</span>
+      </div>
+      <div class="week">${circles}</div>
+    </div>
     <div class="card">
       <div class="ring-wrap">
         <svg viewBox="0 0 250 250"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#1c1c1f" stroke-width="20"/>${segs}</svg>
