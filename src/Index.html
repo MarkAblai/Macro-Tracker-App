@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+:root{
+  --bg:#000;--card:#0e0e10;--card2:#18181b;--line:#222226;
+  --text:#f5f5f7;--muted:#8e8e93;
+  --cal:#03dac6;--pro:#bb86fc;--bad:#ff5a5f;
+  --r:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+button{font:inherit}
+.wrap{max-width:520px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 20px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;margin:10px 0 20px}
+.eyebrow{font-size:13px;color:var(--muted);font-weight:500}
+h1{font-size:32px;font-weight:700;letter-spacing:-.03em;margin-top:2px}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.num{font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);font-size:14px;padding:18px 0 6px;text-align:center}
+
+/* Ring */
+.ring-wrap{position:relative;width:250px;height:250px;margin:4px auto 14px}
+.ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-wrap circle{transition:stroke-dasharray .6s ease,stroke-dashoffset .6s ease}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.big{font-size:52px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.big.bad{color:var(--bad)}
+.sub{font-size:13px;color:var(--muted);margin-top:6px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--card2);border-radius:14px;padding:12px 8px;text-align:center}
+.stat b{display:block;font-size:18px;font-weight:650}
+.stat span{font-size:11px;color:var(--muted)}
+
+/* Protein */
+.bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--pro);transition:width .6s ease}
+.pro-val{font-size:15px;font-weight:600}
+.pro-val small{color:var(--muted);font-weight:500}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+
+/* Food list */
+.item{padding:14px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0;padding-top:6px}
+.item .l{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.sw{width:10px;height:10px;border-radius:3px;margin-top:5px;flex:none}
+.name{font-size:15px;font-weight:550;line-height:1.3}
+.meta{font-size:12px;color:var(--muted);margin-top:3px}
+.r{text-align:right;flex:none}
+.kcal{font-size:15px;font-weight:650}
+.share{height:4px;background:var(--card2);border-radius:99px;margin:10px 0 0 20px;overflow:hidden}
+.share i{display:block;height:100%;border-radius:99px}
+.badge{display:inline-block;font-size:10px;font-weight:750;color:#000;background:var(--cal);padding:2px 6px;border-radius:6px;margin-left:8px;vertical-align:2px;letter-spacing:.03em}
+.del{width:32px;height:32px;border-radius:10px;border:0;background:var(--card2);color:var(--muted);display:grid;place-items:center;cursor:pointer;margin-left:10px;flex:none}
+.del svg{width:15px;height:15px}
+.del:hover{color:var(--bad)}
+
+/* Calendar */
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cal-head b{font-size:17px;font-weight:650}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dow div{font-size:11px;color:var(--muted);text-align:center;padding-bottom:6px;font-weight:600}
+.day{aspect-ratio:1/1.2;background:var(--card2);border-radius:12px;padding:6px 2px 7px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;cursor:pointer;border:1.5px solid transparent}
+.day.out{opacity:.25}
+.day.today{border-color:var(--text)}
+.day.sel{background:#2a2a2e}
+.day .n{font-size:12px;color:var(--muted);font-weight:600}
+.day .k{font-size:11px;font-weight:650}
+.dots{display:flex;gap:3px;height:6px}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot.good{background:var(--cal)}.dot.bad{background:var(--bad)}.dot.pro{background:var(--pro)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sum4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* Log */
+.day-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.day-head b{font-size:15px;font-weight:650}
+.day-head span{font-size:12px;color:var(--muted)}
+
+.src-btn{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;color:var(--text);text-decoration:none;font-size:15px;font-weight:600}
+.src-btn svg{width:20px;height:20px;color:var(--cal);flex:none}
+.src-btn span{flex:1}
+.src-btn .ext{width:16px;height:16px;color:var(--muted)}
+
+/* Nav + FAB */
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(8,8,9,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav .in{max-width:520px;margin:0 auto;display:flex;justify-content:space-around}
+nav button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:6px 20px;cursor:pointer}
+nav button.on{color:var(--text)}
+nav svg{width:22px;height:22px}
+.fab{position:fixed;right:max(20px,calc(50vw - 240px));bottom:calc(86px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;background:var(--cal);color:#000;border:0;display:grid;place-items:center;box-shadow:0 10px 30px rgba(3,218,198,.25);cursor:pointer;z-index:6}
+.fab svg{width:26px;height:26px}
+
+/* Add sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+.sheet-bg.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;background:#111113;border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);z-index:10}
+.sheet.open{transform:none}
+.grab{width:40px;height:5px;border-radius:9px;background:#333;margin:0 auto 16px}
+.sheet h2{font-size:20px;font-weight:700;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{font-size:12px;color:var(--muted);font-weight:600}
+input{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:14px;font-size:16px;margin-top:6px;outline:none;-webkit-appearance:none}
+input:focus{border-color:#4a4a50}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{width:100%;background:var(--text);color:#000;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:650;margin-top:6px;cursor:pointer}
+.btn:disabled{opacity:.5}
+
+.toast{position:fixed;left:50%;bottom:calc(160px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:#1f1f22;border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow" id="eyebrow">&nbsp;</div>
+      <h1 id="title">Today</h1>
+    </div>
+    <button class="icon-btn" id="refresh" onclick="load()" aria-label="Refresh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+    </button>
+  </header>
+
+  <section id="v-today"><div class="card"><div class="empty">Loading...</div></div></section>
+  <section id="v-cal" hidden></section>
+  <section id="v-log" hidden></section>
+</div>
+
+<button class="fab" onclick="openAdd()" aria-label="Add food">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<nav><div class="in">
+  <button data-tab="today" class="on" onclick="go('today')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 8.5 8.5"/></svg>Today
+  </button>
+  <button data-tab="cal" onclick="go('cal')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendar
+  </button>
+  <button data-tab="log" onclick="go('log')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Log
+  </button>
+</div></nav>
+
+<div class="sheet-bg" id="bg" onclick="closeAdd()"></div>
+<form class="sheet" id="sheet" onsubmit="submitAdd(event)" autocomplete="off">
+  <div class="grab"></div>
+  <h2>Add food</h2>
+  <div class="field"><label for="f-food">Food</label><input id="f-food" placeholder="e.g. Greek yogurt, 170 g" required></div>
+  <div class="two">
+    <div class="field"><label for="f-kcal">Calories</label><input id="f-kcal" type="number" inputmode="numeric" min="0" placeholder="kcal" required></div>
+    <div class="field"><label for="f-pro">Protein (g)</label><input id="f-pro" type="number" inputmode="numeric" min="0" placeholder="g"></div>
+  </div>
+  <button class="btn" id="f-btn" type="submit">Add to log</button>
+</form>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let D = null, tab = 'today', calMonth = null, selDay = null;
+const SH = ['#03dac6', '#029e90', '#7ff0e5', '#01776c', '#3fe6d6', '#02b8a7'];
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1mXTi8Cc6HF7jy1iWR4cF9vDEgRqN_AGrCbX9eyyGnqA/edit';
+const RED = ['#ff5a5f', '#c9373c', '#ff9497', '#a52a2e'];
+
+const $ = s => document.querySelector(s);
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const shortName = f => f.replace(/\s*\(.*$/, '') || f;
+const detail = f => (f.match(/\((.*)\)/) || [])[1] || '';
+const sum = (a, k) => a.reduce((s, e) => s + e[k], 0);
+const byTime = (a, b) => a.time.localeCompare(b.time);
+
+function byDate() {
+  const m = {};
+  D.entries.forEach(e => (m[e.date] = m[e.date] || []).push(e));
+  return m;
+}
+
+function load() {
+  $('#refresh').classList.add('spin');
+  google.script.run.withSuccessHandler(setData).withFailureHandler(fail).getData();
+}
+function setData(d) {
+  $('#refresh').classList.remove('spin');
+  D = d;
+  if (!calMonth) {
+    const t = pd(d.today);
+    calMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+    selDay = d.today;
+  }
+  render();
+}
+function fail(e) {
+  $('#refresh').classList.remove('spin');
+  toast(e && e.message ? e.message : String(e));
+}
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function go(t) { tab = t; window.scrollTo(0, 0); if (D) render(); }
+
+function render() {
+  const titles = { today: 'Today', cal: 'Calendar', log: 'Log' };
+  $('#title').textContent = titles[tab];
+  $('#eyebrow').textContent = pd(D.today).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  ['today', 'cal', 'log'].forEach(t => $('#v-' + t).hidden = t !== tab);
+  if (tab === 'today') renderToday();
+  else if (tab === 'cal') renderCal();
+  else renderLog();
+}
+
+/* ---------- Today ---------- */
+function renderToday() {
+  const S = D.settings, T = S.target, P = S.protein;
+  const items = (byDate()[D.today] || []).slice().sort(byTime);
+  const eaten = sum(items, 'kcal'), prot = sum(items, 'protein'), over = eaten > T;
+  const R = 104, C = 2 * Math.PI * R, scale = over ? T / eaten : 1;
+  const color = i => over ? RED[i % RED.length] : SH[i % SH.length];
+
+  let off = 0, segs = '';
+  items.forEach((e, i) => {
+    const len = e.kcal / T * C * scale;
+    if (len <= 0) return;
+    const gap = items.length > 1 ? Math.min(4, len * 0.35) : 0;
+    segs += `<circle cx="125" cy="125" r="${R}" fill="none" stroke="${color(i)}" stroke-width="20" stroke-dasharray="${Math.max(len - gap, 0.01)} ${C}" stroke-dashoffset="${-off}"/>`;
+    off += len;
+  });
+
+  const top = items.reduce((m, e) => (!m || e.kcal > m.kcal) ? e : m, null);
+  const list = items.length ? items.map((e, i) => {
+    const pct = eaten ? Math.round(e.kcal / eaten * 100) : 0;
+    const d = detail(e.food);
+    return `<div class="item">
+      <div class="row">
+        <div class="l"><span class="sw" style="background:${color(i)}"></span>
+          <div><div class="name">${esc(shortName(e.food))}${items.length > 1 && e === top ? '<span class="badge">TOP</span>' : ''}</div>
+          <div class="meta">${esc(e.time)}${d ? ' · ' + esc(d) : ''}</div></div>
+        </div>
+        <div class="r"><div class="kcal num">${fmt(e.kcal)}</div><div class="meta num">${pct}% · ${fmt(e.protein)} g P</div></div>
+      </div>
+      <div class="share"><i style="width:${pct}%;background:${color(i)}"></i></div>
+    </div>`;
+  }).join('') : '<div class="empty">Nothing logged yet today.</div>';
+
+  const pPct = P ? Math.min(100, prot / P * 100) : 0;
+  const pLeft = Math.max(0, P - prot);
+
+  $('#v-today').innerHTML = `
+    <div class="card">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 250 250"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#1c1c1f" stroke-width="20"/>${segs}</svg>
+        <div class="ring-center">
+          <div class="big num ${over ? 'bad' : ''}">${fmt(Math.abs(T - eaten))}</div>
+          <div class="sub">${over ? 'kcal over target' : 'kcal left'}</div>
+        </div>
+      </div>
+      <div class="stats3">
+        <div class="stat"><b class="num">${fmt(eaten)}</b><span>Eaten</span></div>
+        <div class="stat"><b class="num">${fmt(T)}</b><span>Target</span></div>
+        <div class="stat"><b class="num">${T ? Math.round(eaten / T * 100) : 0}%</b><span>Used</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row"><span class="label">Protein</span><span class="pro-val num">${fmt(prot)} <small>/ ${fmt(P)} g</small></span></div>
+      <div class="bar"><i style="width:${pPct}%"></i></div>
+      <div class="hint">${pLeft > 0 ? fmt(pLeft) + ' g to go' : 'Target hit'}</div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:6px"><span class="label">Today's food</span><span class="meta">${items.length} item${items.length === 1 ? '' : 's'}</span></div>
+      ${list}
+    </div>`;
+}
+
+/* ---------- Calendar ---------- */
+function renderCal() {
+  const S = D.settings, map = byDate();
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const start = new Date(y, m, 1 - new Date(y, m, 1).getDay());
+  let cells = '';
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    if (i === 35 && d.getMonth() !== m) break;
+    const k = iso(d), it = map[k] || [];
+    const kc = sum(it, 'kcal'), pr = sum(it, 'protein');
+    const cls = ['day', d.getMonth() !== m ? 'out' : '', k === D.today ? 'today' : '', k === selDay ? 'sel' : ''].join(' ');
+    const dots = it.length
+      ? `<span class="dot ${kc <= S.target ? 'good' : 'bad'}"></span>${S.protein && pr >= S.protein ? '<span class="dot pro"></span>' : ''}`
+      : '';
+    cells += `<div class="${cls}" onclick="pick('${k}')"><span class="n">${d.getDate()}</span><span class="k num">${it.length ? fmt(kc) : ''}</span><span class="dots">${dots}</span></div>`;
+  }
+
+  const prefix = y + '-' + String(m + 1).padStart(2, '0');
+  const days = Object.keys(map).filter(k => k.startsWith(prefix));
+  const mk = days.reduce((s, k) => s + sum(map[k], 'kcal'), 0);
+  const mp = days.reduce((s, k) => s + sum(map[k], 'protein'), 0);
+  const n = days.length;
+  const vsMaint = S.maintenance ? mk - S.maintenance * n : 0;
+  const est = vsMaint / 3500;
+
+  const sel = (map[selDay] || []).slice().sort(byTime);
+  const selList = sel.length ? sel.map(e => `
+    <div class="item"><div class="row">
+      <div class="l"><div><div class="name">${esc(shortName(e.food))}</div><div class="meta">${esc(e.time)}</div></div></div>
+      <div class="r"><div class="kcal num">${fmt(e.kcal)}</div><div class="meta num">${fmt(e.protein)} g P</div></div>
+    </div></div>`).join('') : '<div class="empty">No entries.</div>';
+
+  $('#v-cal').innerHTML = `
+    <div class="card">
+      <div class="cal-head">
+        <button class="icon-btn" onclick="shiftMonth(-1)" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <b>${calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</b>
+        <button class="icon-btn" onclick="shiftMonth(1)" aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="dow">${['S','M','T','W','T','F','S'].map(x => `<div>${x}</div>`).join('')}</div>
+      <div class="grid">${cells}</div>
+      <div class="legend">
+        <span><i class="dot good"></i>At or under target</span>
+        <span><i class="dot bad"></i>Over target</span>
+        <span><i class="dot pro"></i>Protein hit</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label" style="margin-bottom:12px">Month summary</div>
+      <div class="sum4">
+        <div class="stat"><b class="num">${n}</b><span>Days logged</span></div>
+        <div class="stat"><b class="num">${n ? fmt(mk / n) : 0}</b><span>Avg kcal/day</span></div>
+        <div class="stat"><b class="num">${n ? fmt(mp / n) : 0} g</b><span>Avg protein/day</span></div>
+        <div class="stat"><b class="num">${est > 0 ? '+' : ''}${est.toFixed(1)} lb</b><span>Est. change</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:6px">
+        <span class="label">${pd(selDay).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+        <span class="meta num">${fmt(sum(sel, 'kcal'))} kcal · ${fmt(sum(sel, 'protein'))} g P</span>
+      </div>
+      ${selList}
+    </div>`;
+}
+function pick(k) { selDay = k; renderCal(); }
+function shiftMonth(n) { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + n, 1); renderCal(); }
+
+/* ---------- Log ---------- */
+function renderLog() {
+  const map = byDate();
+  const dates = Object.keys(map).sort().reverse();
+  const srcBtn = `<a class="src-btn" href="${SHEET_URL}" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M4 9h16M4 15h16M10 9v12"/></svg>
+    <span>Open source Google Sheet</span>
+    <svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+  </a>`;
+  if (!dates.length) { $('#v-log').innerHTML = srcBtn + '<div class="card"><div class="empty">No entries yet.</div></div>'; return; }
+  $('#v-log').innerHTML = srcBtn + dates.map(k => {
+    const it = map[k].slice().sort(byTime).reverse();
+    return `<div class="card">
+      <div class="day-head"><b>${k === D.today ? 'Today' : pd(k).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</b>
+        <span class="num">${fmt(sum(it, 'kcal'))} kcal · ${fmt(sum(it, 'protein'))} g P</span></div>
+      ${it.map(e => `<div class="item"><div class="row">
+        <div class="l"><div><div class="name">${esc(shortName(e.food))}</div><div class="meta">${esc(e.time)}${detail(e.food) ? ' · ' + esc(detail(e.food)) : ''}</div></div></div>
+        <div class="row" style="gap:0"><div class="r"><div class="kcal num">${fmt(e.kcal)}</div><div class="meta num">${fmt(e.protein)} g P</div></div>
+        <button class="del" onclick="removeEntry(${D.entries.indexOf(e)})" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div>
+      </div></div>`).join('')}
+    </div>`;
+  }).join('');
+}
+function removeEntry(i) {
+  const e = D.entries[i];
+  if (!e || !confirm('Delete "' + shortName(e.food) + '"?')) return;
+  google.script.run.withSuccessHandler(d => { setData(d); toast('Deleted'); }).withFailureHandler(fail).deleteEntry(e.row, e.food);
+}
+
+/* ---------- Add ---------- */
+function openAdd() {
+  $('#bg').classList.add('open');
+  $('#sheet').classList.add('open');
+  setTimeout(() => $('#f-food').focus(), 250);
+}
+function closeAdd() {
+  $('#bg').classList.remove('open');
+  $('#sheet').classList.remove('open');
+}
+function submitAdd(ev) {
+  ev.preventDefault();
+  const b = $('#f-btn');
+  const done = () => { b.disabled = false; b.textContent = 'Add to log'; };
+  b.disabled = true; b.textContent = 'Saving...';
+  google.script.run
+    .withSuccessHandler(d => { done(); ev.target.reset(); closeAdd(); tab = 'today'; setData(d); toast('Logged'); })
+    .withFailureHandler(e => { done(); fail(e); })
+    .addEntry({ food: $('#f-food').value, kcal: $('#f-kcal').value, protein: $('#f-pro').value });
+}
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+load();
+</script>
+</body>
+</html>
