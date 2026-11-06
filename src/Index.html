@@ -62,6 +62,29 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.03em;margin-top:2px}
 .sc.today .num{position:relative;z-index:1}
 @keyframes popin{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
 
+/* Weight */
+.stat small{font-size:11px;font-weight:500;color:var(--muted)}
+.tdee{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:14px}
+.tdee small{font-size:13px;font-weight:500;letter-spacing:0;color:var(--muted)}
+.tag{font-size:10px;font-weight:700;color:var(--muted);background:var(--card2);padding:3px 7px;border-radius:6px;letter-spacing:.03em}
+.progress{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.progress .bar{height:6px;margin-top:6px}
+.progress .bar i{background:var(--cal)}
+.chart{position:relative;margin-top:10px;touch-action:pan-y;user-select:none;-webkit-user-select:none;outline-offset:4px;border-radius:6px}
+.chart svg{display:block;width:100%}
+.chart .empty{padding:44px 0}
+.ch-g{stroke:var(--line);stroke-width:1}
+.ch-t{fill:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
+.ch-v{fill:var(--text);font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
+.ch-l{fill:none;stroke:var(--cal);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ch-p{fill:var(--cal)}
+.ch-d{fill:var(--muted);opacity:.75}
+.ch-x{stroke:var(--muted);stroke-width:1;opacity:.6}
+.ch-r{fill:var(--cal);stroke:var(--card);stroke-width:2}
+.ch-w{fill:var(--text);stroke:var(--card);stroke-width:2}
+.tip{position:absolute;left:0;top:0;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:6px 9px;font-size:11px;color:var(--muted);white-space:nowrap;pointer-events:none;line-height:1.35;font-variant-numeric:tabular-nums}
+.tip b{display:block;color:var(--text);font-size:13px;font-weight:650}
+
 /* Protein */
 .bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:12px}
 .bar i{display:block;height:100%;border-radius:99px;background:var(--pro);transition:width .6s ease}
@@ -116,7 +139,7 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.03em;margin-top:2px}
 /* Nav + FAB */
 nav{position:fixed;left:0;right:0;bottom:0;background:rgba(8,8,9,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:5}
 nav .in{max-width:520px;margin:0 auto;display:flex;justify-content:space-around}
-nav button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:6px 20px;cursor:pointer}
+nav button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:6px 12px;cursor:pointer}
 nav button.on{color:var(--text)}
 nav svg{width:22px;height:22px}
 .fab{position:fixed;right:max(20px,calc(50vw - 240px));bottom:calc(86px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;background:var(--cal);color:#000;border:0;display:grid;place-items:center;box-shadow:0 10px 30px rgba(3,218,198,.25);cursor:pointer;z-index:6}
@@ -129,7 +152,10 @@ nav svg{width:22px;height:22px}
 .sheet.open{transform:none}
 .grab{width:40px;height:5px;border-radius:9px;background:#333;margin:0 auto 16px}
 .sheet h2{font-size:20px;font-weight:700;margin-bottom:14px}
-.field{margin-bottom:12px}
+.field{margin-bottom:12px;min-width:0}
+#w-sheet input{height:50px}
+input[type=date]{color-scheme:dark}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
 .field label{font-size:12px;color:var(--muted);font-weight:600}
 input{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:14px;font-size:16px;margin-top:6px;outline:none;-webkit-appearance:none}
 input:focus{border-color:#4a4a50}
@@ -154,6 +180,7 @@ input:focus{border-color:#4a4a50}
   </header>
 
   <section id="v-today"><div class="card"><div class="empty">Loading...</div></div></section>
+  <section id="v-weight" hidden></section>
   <section id="v-cal" hidden></section>
   <section id="v-log" hidden></section>
 </div>
@@ -165,6 +192,9 @@ input:focus{border-color:#4a4a50}
 <nav><div class="in">
   <button data-tab="today" class="on" onclick="go('today')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 8.5 8.5"/></svg>Today
+  </button>
+  <button data-tab="weight" onclick="go('weight')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 11a4.6 4.6 0 0 1 8 0"/><path d="M12 11l1.5-2.5"/></svg>Weight
   </button>
   <button data-tab="cal" onclick="go('cal')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendar
@@ -184,6 +214,15 @@ input:focus{border-color:#4a4a50}
     <div class="field"><label for="f-pro">Protein (g)</label><input id="f-pro" type="number" inputmode="numeric" min="0" placeholder="g"></div>
   </div>
   <button class="btn" id="f-btn" type="submit">Add to log</button>
+</form>
+<form class="sheet" id="w-sheet" onsubmit="submitWeight(event)" autocomplete="off">
+  <div class="grab"></div>
+  <h2>Log weight</h2>
+  <div class="two">
+    <div class="field"><label for="w-lb">Weight (lb)</label><input id="w-lb" type="number" inputmode="decimal" step="0.1" min="50" max="500" placeholder="lb" required></div>
+    <div class="field"><label for="w-date">Date</label><input id="w-date" type="date" required></div>
+  </div>
+  <button class="btn" id="w-btn" type="submit">Save weight</button>
 </form>
 
 <div class="toast" id="toast"></div>
@@ -238,12 +277,14 @@ function toast(msg) {
 function go(t) { tab = t; window.scrollTo(0, 0); if (D) render(); }
 
 function render() {
-  const titles = { today: 'Today', cal: 'Calendar', log: 'Log' };
+  const titles = { today: 'Today', weight: 'Weight', cal: 'Calendar', log: 'Log' };
   $('#title').textContent = titles[tab];
   $('#eyebrow').textContent = pd(D.today).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  ['today', 'cal', 'log'].forEach(t => $('#v-' + t).hidden = t !== tab);
+  ['today', 'weight', 'cal', 'log'].forEach(t => $('#v-' + t).hidden = t !== tab);
+  $('.fab').setAttribute('aria-label', tab === 'weight' ? 'Log weight' : 'Add food');
   if (tab === 'today') renderToday();
+  else if (tab === 'weight') renderWeight();
   else if (tab === 'cal') renderCal();
   else renderLog();
 }
@@ -347,6 +388,222 @@ function renderToday() {
     </div>`;
 }
 
+/* ---------- Weight ---------- */
+const GAP_DAYS = 14; // the trend line breaks across a longer gap between weigh-ins
+const dayNum = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) / 864e5; };
+const shortDate = s => pd(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const lbs = n => n.toFixed(1);
+const signed = n => { const v = Number(n.toFixed(1)); return (v > 0 ? '+' : '') + v.toFixed(1); };
+
+// Weigh-ins up to today, each with its EMA trend. The EMA runs over all history,
+// so a chart window never starts cold.
+function weightSeries() {
+  const end = dayNum(D.today);
+  let ema = null;
+  return D.weights.map(w => {
+    ema = ema === null ? w.lb : 0.1 * w.lb + 0.9 * ema;
+    return { row: w.row, date: w.date, lb: w.lb, trend: ema, day: dayNum(w.date) };
+  }).filter(p => p.day <= end);
+}
+
+function renderWeight() {
+  const T = D.tdee, S = weightSeries(), latest = S[S.length - 1];
+  const inWindow = S.filter(p => p.day >= dayNum(D.today) - 30);
+  const change = inWindow.length >= 2 ? latest.lb - inWindow[0].lb : null;
+  const dash = '–';
+  const pct = (n, of) => Math.min(100, n / of * 100);
+
+  const big = T.adaptive !== null ? T.adaptive : T.manual;
+  const tdeeBody = `
+    <div class="tdee num">${big !== null ? fmt(big) : '–'} <small>kcal/day</small></div>
+    ${T.adaptive !== null ? '' : `
+      <div class="hint">${esc(T.status)}</div>
+      <div class="progress">
+        <div><div class="row meta" style="margin:0"><span>Food days</span><span class="num">${T.foodDays}/14</span></div><div class="bar"><i style="width:${pct(T.foodDays, 14)}%"></i></div></div>
+        <div><div class="row meta" style="margin:0"><span>Weigh-ins</span><span class="num">${T.weighIns}/8</span></div><div class="bar"><i style="width:${pct(T.weighIns, 8)}%"></i></div></div>
+      </div>`}
+    <div class="hint" style="margin-top:12px">Estimated from your intake and weight trend over the last 28 days.</div>`;
+
+  const recent = S.slice(-10).reverse().map(p => `
+    <div class="item"><div class="row">
+      <div class="l"><div class="name">${pd(p.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div></div>
+      <div class="row" style="gap:0"><div class="kcal num">${lbs(p.lb)} lb</div>
+      <button class="del" onclick="removeWeight(${p.row},'${p.date}',${p.lb})" aria-label="Delete weigh-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div>
+    </div></div>`).join('');
+
+  $('#v-weight').innerHTML = `
+    <div class="card">
+      <div class="stats3">
+        <div class="stat"><b class="num">${latest ? lbs(latest.lb) + ' <small>lb</small>' : dash}</b><span>Current${latest ? '<br>' + shortDate(latest.date) : ''}</span></div>
+        <div class="stat"><b class="num">${change !== null ? signed(change) + ' <small>lb</small>' : dash}</b><span>30-day<br>change</span></div>
+        <div class="stat"><b class="num">${T.trend !== null ? signed(T.trend) + ' <small>lb/wk</small>' : dash}</b><span>Weekly<br>rate</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row"><span class="label">Adaptive TDEE</span>${T.adaptive !== null ? '' : '<span class="tag">Manual</span>'}</div>
+      ${tdeeBody}
+    </div>
+    <div class="card"><span class="label">Last 30 days</span><div class="chart" id="ch-30"></div></div>
+    <div class="card"><span class="label">Last 365 days</span><div class="chart" id="ch-365"></div></div>
+    <div class="card">
+      <div class="row" style="margin-bottom:6px"><span class="label">Recent weigh-ins</span></div>
+      ${recent || '<div class="empty">No weigh-ins yet.</div>'}
+    </div>`;
+  drawWeightCharts();
+}
+
+function drawWeightCharts() {
+  drawChart($('#ch-30'), 30, false);
+  drawChart($('#ch-365'), 365, true);
+}
+
+// Gridlines at round lb values: 3 to 4 of them, about 1 lb of padding around the data.
+function yTicks(min, max) {
+  let lo = min - 1, hi = max + 1;
+  const count = s => Math.floor(hi / s) - Math.ceil(lo / s) + 1;
+  const step = [0.5, 1, 2, 5, 10, 20, 50, 100].find(s => count(s) <= 4);
+  while (count(step) < 3) {
+    const up = (Math.floor(hi / step) + 1) * step, down = (Math.ceil(lo / step) - 1) * step;
+    if (up - hi <= lo - down) hi = up; else lo = down;
+  }
+  const ticks = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
+  return { lo, hi, ticks, dp: step < 1 ? 1 : 0 };
+}
+
+function drawChart(el, days, areaMode) {
+  const end = dayNum(D.today), start = end - days;
+  const pts = weightSeries().filter(p => p.day >= start);
+  el.dataset.w = el.clientWidth;
+  el.removeAttribute('tabindex');
+  el.onpointerdown = el.onpointermove = el.onpointerleave = el.onkeydown = el.onfocus = el.onblur = el._hide = null;
+  if (pts.length < 2) { el.innerHTML = '<div class="empty">Not enough data</div>'; return; }
+
+  const W = el.clientWidth || 300, H = 200, L = 34, R = 8, TOP = 12, BOTTOM = 176;
+  const vals = areaMode ? pts.map(p => p.trend) : pts.flatMap(p => [p.lb, p.trend]);
+  const Y = yTicks(Math.min(...vals), Math.max(...vals));
+  const x = d => L + (d - start) / (end - start) * (W - L - R);
+  const y = v => BOTTOM - (v - Y.lo) / (Y.hi - Y.lo) * (BOTTOM - TOP);
+  const pos = n => n.toFixed(1);
+
+  const grid = Y.ticks.map(v => {
+    const gy = Math.round(y(v)) + 0.5;
+    return `<line class="ch-g" x1="${L}" x2="${W - R}" y1="${gy}" y2="${gy}"/><text class="ch-t" x="${L - 6}" y="${gy + 3.5}" text-anchor="end">${v.toFixed(Y.dp)}</text>`;
+  }).join('');
+
+  const t0 = pd(D.today);
+  const dates = [3, 2, 1, 0].map((f, i) => {
+    const d = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - Math.round(days * f / 3));
+    const anchor = i === 0 ? 'start' : i === 3 ? 'end' : 'middle';
+    return `<text class="ch-t" x="${pos(x(end - Math.round(days * f / 3)))}" y="${H - 6}" text-anchor="${anchor}">${shortDate(iso(d))}</text>`;
+  }).join('');
+
+  // One run of the line per stretch without a long gap, so gaps read as gaps.
+  const runs = pts.reduce((a, p, i) => {
+    if (!i || p.day - pts[i - 1].day > GAP_DAYS) a.push([]);
+    a[a.length - 1].push(p);
+    return a;
+  }, []);
+  const line = run => run.map((p, i) => (i ? 'L' : 'M') + pos(x(p.day)) + ' ' + pos(y(p.trend))).join('');
+  const lines = runs.map(r => r.length > 1
+    ? `<path class="ch-l" d="${line(r)}"/>`
+    : `<circle class="ch-p" cx="${pos(x(r[0].day))}" cy="${pos(y(r[0].trend))}" r="1.5"/>`).join('');
+
+  let extra = '';
+  if (areaMode) {
+    const fills = runs.filter(r => r.length > 1).map(r =>
+      `<path fill="url(#ch-fill)" stroke="none" d="${line(r)}L${pos(x(r[r.length - 1].day))} ${BOTTOM}L${pos(x(r[0].day))} ${BOTTOM}Z"/>`).join('');
+    extra = `<defs><linearGradient id="ch-fill" gradientUnits="userSpaceOnUse" x1="0" y1="${TOP}" x2="0" y2="${BOTTOM}"><stop offset="0" style="stop-color:var(--cal);stop-opacity:.24"/><stop offset="1" style="stop-color:var(--cal);stop-opacity:0"/></linearGradient></defs>${fills}`;
+  } else {
+    extra = pts.map(p => `<circle class="ch-d" cx="${pos(x(p.day))}" cy="${pos(y(p.lb))}" r="2.5"/>`).join('');
+  }
+
+  // Start, end and lowest-point labels (365-day chart only).
+  let labels = '';
+  if (areaMode) {
+    const first = pts[0], last = pts[pts.length - 1];
+    const low = pts.reduce((m, p) => p.trend < m.trend ? p : m, first);
+    const text = p => (p === low ? 'Low ' : '') + lbs(p.trend);
+    const below = v => Math.min(y(v) + 15, BOTTOM + 6);
+    const ly = p => p === low ? below(p.trend) : Math.max(y(p.trend) - 8, 10);
+    // Nothing is drawn left of the first point, so when the start and end labels
+    // would collide the start label moves beside its point.
+    const close = x(last.day) - x(first.day) < 72;
+    const endX = Math.max(x(last.day), L + 30), endWidth = last === low ? 54 : 32;
+    labels += close
+      ? `<text class="ch-v" x="${pos(Math.max(Math.min(x(first.day) - 8, endX - endWidth), L + 50))}" y="${pos(y(first.trend) + 3.5)}" text-anchor="end">${text(first)}</text>`
+      : `<text class="ch-v" x="${pos(Math.max(x(first.day), L + 2))}" y="${pos(ly(first))}" text-anchor="start">${text(first)}</text>`;
+    labels += `<text class="ch-v" x="${pos(endX)}" y="${pos(ly(last))}" text-anchor="end">${text(last)}</text>`;
+    if (low !== first && low !== last) {
+      const lx = Math.min(Math.max(x(low.day), L + 28), W - R - 28);
+      labels += `<text class="ch-v" x="${pos(lx)}" y="${pos(below(low.trend))}" text-anchor="middle">${text(low)}</text>`;
+    }
+    labels += [first, last, low].map(p => `<circle class="ch-p" cx="${pos(x(p.day))}" cy="${pos(y(p.trend))}" r="3"/>`).join('');
+  }
+
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Weight trend, last ${days} days. ${pts.length} weigh-ins, latest ${lbs(pts[pts.length - 1].lb)} lb.">
+      ${grid}${dates}${extra}${lines}${labels}
+      <g class="ch-m" hidden><line class="ch-x" y1="${TOP}" y2="${BOTTOM}"/><circle class="ch-r" r="4"/><circle class="ch-w" r="3.5"/></g>
+    </svg><div class="tip" hidden><b></b><div></div></div>`;
+
+  const marker = el.querySelector('.ch-m'), tip = el.querySelector('.tip');
+  const [mLine, mTrend, mWeight] = marker.children;
+  let cur = null;
+  const show = i => {
+    cur = i;
+    const p = pts[i], px = x(p.day), yL = y(p.lb), yT = y(p.trend);
+    mLine.setAttribute('x1', px); mLine.setAttribute('x2', px);
+    mTrend.setAttribute('cx', px); mTrend.setAttribute('cy', yT);
+    mWeight.setAttribute('cx', px); mWeight.setAttribute('cy', yL);
+    mWeight.setAttribute('visibility', areaMode ? 'hidden' : 'visible');
+    marker.removeAttribute('hidden'); // SVG elements have no .hidden property
+    tip.children[0].textContent = lbs(p.lb) + ' lb';
+    tip.children[1].textContent = pd(p.date).toLocaleDateString('en-US', areaMode ? { month: 'short', day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric' }) + ' · trend ' + lbs(p.trend);
+    tip.hidden = false;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    const yTop = areaMode ? yT : Math.min(yL, yT), yBot = areaMode ? yT : Math.max(yL, yT);
+    const above = yTop - th - 10;
+    tip.style.transform = `translate(${Math.max(0, Math.min(px - tw / 2, W - tw))}px,${above >= 0 ? above : yBot + 10}px)`;
+  };
+  const hide = () => { cur = null; marker.setAttribute('hidden', ''); tip.hidden = true; };
+  const nearest = e => {
+    const mx = e.clientX - el.getBoundingClientRect().left;
+    let best = 0;
+    pts.forEach((p, i) => { if (Math.abs(x(p.day) - mx) < Math.abs(x(pts[best].day) - mx)) best = i; });
+    return best;
+  };
+  el._hide = hide;
+  el.tabIndex = 0;
+  el.onpointerdown = el.onpointermove = e => show(nearest(e));
+  // A finger lifting also fires pointerleave, so only the mouse dismisses this way.
+  el.onpointerleave = e => { if (e.pointerType === 'mouse') hide(); };
+  el.onfocus = () => { if (el.matches(':focus-visible')) show(pts.length - 1); };
+  el.onblur = hide;
+  el.onkeydown = e => {
+    if (e.key === 'Escape') return hide();
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const from = cur === null ? pts.length - 1 : cur + (e.key === 'ArrowLeft' ? -1 : 1);
+    show(Math.max(0, Math.min(pts.length - 1, from)));
+  };
+}
+
+// Tapping anywhere else on a phone dismisses a chart tooltip.
+document.addEventListener('pointerdown', e => {
+  const inside = e.target.closest && e.target.closest('.chart');
+  document.querySelectorAll('.chart').forEach(c => { if (c !== inside && c._hide) c._hide(); });
+});
+window.addEventListener('resize', () => {
+  if (!D || tab !== 'weight') return;
+  const c = $('#ch-30');
+  if (c && String(c.clientWidth) !== c.dataset.w) drawWeightCharts();
+});
+
+function removeWeight(row, date, lb) {
+  if (!confirm('Delete the ' + shortDate(date) + ' weigh-in (' + lbs(lb) + ' lb)?')) return;
+  google.script.run.withSuccessHandler(d => { setData(d); toast('Deleted'); }).withFailureHandler(fail).deleteWeight(row, date);
+}
+
 /* ---------- Calendar ---------- */
 function renderCal() {
   const S = D.settings, map = byDate();
@@ -370,7 +627,8 @@ function renderCal() {
   const mk = days.reduce((s, k) => s + sum(map[k], 'kcal'), 0);
   const mp = days.reduce((s, k) => s + sum(map[k], 'protein'), 0);
   const n = days.length;
-  const vsMaint = S.maintenance ? mk - S.maintenance * n : 0;
+  const maint = D.tdee.inUse;
+  const vsMaint = maint ? mk - maint * n : 0;
   const est = vsMaint / 3500;
 
   const sel = (map[selDay] || []).slice().sort(byTime);
@@ -446,13 +704,31 @@ function removeEntry(i) {
 
 /* ---------- Add ---------- */
 function openAdd() {
+  const weight = tab === 'weight';
+  if (weight) {
+    const today = D ? D.today : iso(new Date());
+    $('#w-date').value = today;
+    $('#w-date').max = today;
+  }
   $('#bg').classList.add('open');
-  $('#sheet').classList.add('open');
-  setTimeout(() => $('#f-food').focus(), 250);
+  $(weight ? '#w-sheet' : '#sheet').classList.add('open');
+  setTimeout(() => $(weight ? '#w-lb' : '#f-food').focus(), 250);
 }
 function closeAdd() {
   $('#bg').classList.remove('open');
   $('#sheet').classList.remove('open');
+  $('#w-sheet').classList.remove('open');
+}
+function submitWeight(ev) {
+  ev.preventDefault();
+  const b = $('#w-btn'), date = $('#w-date').value;
+  const existed = D && D.weights.some(w => w.date === date);
+  const done = () => { b.disabled = false; b.textContent = 'Save weight'; };
+  b.disabled = true; b.textContent = 'Saving...';
+  google.script.run
+    .withSuccessHandler(d => { done(); ev.target.reset(); closeAdd(); setData(d); toast(existed ? 'Weight updated' : 'Logged'); })
+    .withFailureHandler(e => { done(); fail(e); })
+    .addWeight({ lb: $('#w-lb').value, date: date });
 }
 function submitAdd(ev) {
   ev.preventDefault();

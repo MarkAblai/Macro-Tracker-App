@@ -4,6 +4,7 @@ A dark-themed calorie and protein tracker that runs as a Google Apps Script web 
 
 ## Features
 - **Today:** calorie ring split by food, calories left, protein progress
+- **Weight:** weigh-ins, 30-day and 365-day trend charts, adaptive TDEE
 - **Calendar:** monthly view showing target hits and misses
 - **Log:** every entry by day, with delete and a link to the source sheet
 - **Quick add:** log food from any page

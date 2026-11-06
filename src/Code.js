@@ -48,11 +48,130 @@ function getData() {
     }
   }
 
+  const weightSheet = ss.getSheetByName('Weight');
+  const weights = readWeightRows_(weightSheet, tz)
+    .filter(w => typeof w.lb === 'number' && w.lb > 0)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.row - b.row);
+
+  // Read-only formula block: F5 food days, F7 weigh-ins, F8 trend, F9 adaptive,
+  // F10 status, F11 manual maintenance, F12 maintenance in use.
+  const block = weightSheet.getRange('F5:F12').getValues().map(r => r[0]);
+  const numOrNull = v => (typeof v === 'number' ? v : null);
+  const tdee = {
+    foodDays: Number(block[0]) || 0,
+    weighIns: Number(block[2]) || 0,
+    trend: numOrNull(block[3]),
+    adaptive: numOrNull(block[4]),
+    status: String(block[5]),
+    manual: numOrNull(block[6]),
+    inUse: numOrNull(block[7])
+  };
+
   return {
     today: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'),
     settings: settings,
-    entries: entries
+    entries: entries,
+    weights: weights,
+    tdee: tdee
   };
+}
+
+// Normalizes a Weight!A cell to 'yyyy-MM-dd', or '' if it doesn't hold a date.
+function weightDate_(value, display, tz) {
+  const s = value instanceof Date
+    ? Utilities.formatDate(value, tz, 'yyyy-MM-dd')
+    : String(display).trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : '';
+}
+
+// Every Weight row holding a date, in sheet order. lb is whatever B holds.
+function readWeightRows_(sheet, tz) {
+  const last = lastWeightRow_(sheet);
+  if (last < 2) return [];
+  const range = sheet.getRange(2, 1, last - 1, 2);
+  const vals = range.getValues();
+  const disp = range.getDisplayValues();
+  const rows = [];
+  for (let i = 0; i < vals.length; i++) {
+    const date = weightDate_(vals[i][0], disp[i][0], tz);
+    if (date) rows.push({ row: i + 2, date: date, lb: vals[i][1] });
+  }
+  return rows;
+}
+
+// Last row with anything in A:B. sheet.getLastRow() isn't enough on its own
+// because the E:F block also counts towards it.
+function lastWeightRow_(sheet) {
+  const last = sheet.getLastRow();
+  if (last < 2) return 1;
+  const vals = sheet.getRange(2, 1, last - 1, 2).getValues();
+  for (let i = vals.length - 1; i >= 0; i--) {
+    if (vals[i][0] !== '' || vals[i][1] !== '') return i + 2;
+  }
+  return 1;
+}
+
+// Logs a weigh-in. Overwrites the row for that date if there is one, else appends.
+function addWeight(e) {
+  const lb = Math.round(Number(e && e.lb) * 10) / 10;
+  if (!isFinite(lb) || lb < 50 || lb > 500) throw new Error('Enter a weight from 50 to 500 lb.');
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const ss = book_();
+    const tz = ss.getSpreadsheetTimeZone();
+    const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+    const date = (e && e.date) ? String(e.date) : today;
+    const m = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const check = m && new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    if (!m || check.getUTCMonth() !== +m[2] - 1 || check.getUTCDate() !== +m[3]) throw new Error('Enter a valid date.');
+    if (date > today) throw new Error('The date cannot be in the future.');
+
+    const sheet = ss.getSheetByName('Weight');
+    const existing = readWeightRows_(sheet, tz).filter(w => w.date === date).pop();
+    if (existing) {
+      sheet.getRange(existing.row, 2).setNumberFormat('0.0').setValue(lb);
+    } else {
+      const row = lastWeightRow_(sheet) + 1;
+      if (row > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 1);
+      const r = sheet.getRange(row, 1, 1, 2);
+      r.setNumberFormats([['yyyy-mm-dd', '0.0']]);
+      r.setValues([[date, lb]]);
+    }
+    SpreadsheetApp.flush();
+  } finally {
+    lock.releaseLock();
+  }
+  return getData();
+}
+
+// Removes one weigh-in, only if the row still holds the expected date.
+// Never use deleteRow() here: rows on this tab are shared with the E:F formula
+// block, so only A:B may change. Rows below are moved up by value so that the
+// open-ended $A$2:$A references in those formulas are left alone.
+function deleteWeight(row, date) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const ss = book_();
+    const tz = ss.getSpreadsheetTimeZone();
+    const sheet = ss.getSheetByName('Weight');
+    const last = lastWeightRow_(sheet);
+    const cell = (row >= 2 && row <= last) ? sheet.getRange(row, 1) : null;
+    if (!cell || weightDate_(cell.getValue(), cell.getDisplayValue(), tz) !== date) {
+      throw new Error('The log changed. Refresh and try again.');
+    }
+    if (row < last) {
+      const below = sheet.getRange(row + 1, 1, last - row, 2).getValues();
+      sheet.getRange(row, 1, below.length, 2).setValues(below);
+    }
+    sheet.getRange(last, 1, 1, 2).clearContent();
+    SpreadsheetApp.flush();
+  } finally {
+    lock.releaseLock();
+  }
+  return getData();
 }
 
 // Appends one row to the Log tab: Date | Time | Food | Calories | Protein
